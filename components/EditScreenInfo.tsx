@@ -1,77 +1,95 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { TextInput, SafeAreaView, StyleSheet, useColorScheme, Platform  } from 'react-native';
+import numWords from 'num-words';
+import Colors from './customColor'; // Ensure this path is correct
+import { Text, View } from './Themed'; // Use your custom Themed components here
 
-import { ExternalLink } from './ExternalLink';
-import { MonoText } from './StyledText';
-import { Text, View } from './Themed';
+export default function App() {
+  const [number, setNumber] = useState('');
+  const [word, setWord] = useState('');
+  const scheme = useColorScheme(); // Get the current color scheme ('light' or 'dark')
 
-import Colors from '@/constants/Colors';
+  const convertToWords = (numInput: string) => {
+    setNumber(numInput);
+    if (numInput.length > 8) {
+      setWord("Number too large");
+      return;
+    }
+    const num = parseInt(numInput);
+    try {
+      if (!isNaN(num)) {
+        const wordConverted = numWords(num);
+        const capitalizedWord = wordConverted.charAt(0).toUpperCase() + wordConverted.slice(1);
+        setWord(capitalizedWord);
+      } else {
+        setWord("Invalid");
+      }
+    } catch (error) {
+      console.error(error);
+      setWord("Error converting number");
+    }
+  };
 
-export default function EditScreenInfo({ path }: { path: string }) {
+  const textInputStyles = StyleSheet.flatten([
+    styles.input,
+    {
+      color: scheme === 'dark' ? Colors.dark.text : Colors.light.text,
+      borderColor: scheme === 'dark' ? Colors.dark.border : Colors.light.border,
+    }
+  ]);
+
   return (
-    <View>
-      <View style={styles.getStartedContainer}>
-        <Text
-          style={styles.getStartedText}
-          lightColor="rgba(0,0,0,0.8)"
-          darkColor="rgba(255,255,255,0.8)">
-          Open up the code for this screen:
-        </Text>
-
-        <View
-          style={[styles.codeHighlightContainer, styles.homeScreenFilename]}
-          darkColor="rgba(255,255,255,0.05)"
-          lightColor="rgba(0,0,0,0.05)">
-          <MonoText>{path}</MonoText>
-        </View>
-
-        <Text
-          style={styles.getStartedText}
-          lightColor="rgba(0,0,0,0.8)"
-          darkColor="rgba(255,255,255,0.8)">
-          Change any of the text, save the file, and your app will automatically update.
-        </Text>
+    <SafeAreaView style={scheme === 'dark' ? styles.safeAreaDark : styles.safeAreaLight}>
+      <Text style={scheme === 'dark' ? styles.textDark : styles.textLight}>{word} Only</Text>
+      <View style={scheme === 'dark' ? styles.containerDark : styles.containerLight}>
+        <TextInput
+          style={textInputStyles}
+          onChangeText={convertToWords}
+          value={number}
+          keyboardType="numeric"
+          placeholder="Enter a number to convert to words"
+          placeholderTextColor={scheme === 'dark' ? Colors.dark.placeholder : Colors.light.placeholder}
+        />
       </View>
-
-      <View style={styles.helpContainer}>
-        <ExternalLink
-          style={styles.helpLink}
-          href="https://docs.expo.io/get-started/create-a-new-app/#opening-the-app-on-your-phonetablet">
-          <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
-            Tap here if your app doesn't automatically update after making changes
-          </Text>
-        </ExternalLink>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  getStartedContainer: {
+  safeAreaDark: {
+    flex: 1,
     alignItems: 'center',
-    marginHorizontal: 50,
+    justifyContent: 'center',
   },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightContainer: {
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  helpContainer: {
-    marginTop: 15,
-    marginHorizontal: 20,
+  safeAreaLight: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  helpLink: {
-    paddingVertical: 15,
+  containerDark: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  helpLinkText: {
-    textAlign: 'center',
+  containerLight: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  input: {
+    width: '80%',
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 20,
+    borderColor: Platform.OS === 'web' ? '#333' : undefined,
+    color: Platform.OS === 'web' ? '#fff' : undefined,
+  },
+  textDark: {
+    marginTop: 20,
+    fontSize: 20,
+  },
+  textLight: {
+    marginTop: 20,
+    fontSize: 20,
   },
 });
